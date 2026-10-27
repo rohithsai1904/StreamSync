@@ -73,13 +73,27 @@ public class DebeziumTableService {
 
     public void updateRecords(String tableName,Map<String, ?> before,Map<String, ?> after){
 
+        Object id = before.get("id");
+        String checkSql = "SELECT COUNT(*) FROM " + tableName + " WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, id);
+
+        if (count == null || count == 0) {
+            System.out.println("ID " + id + " does not exist in target table "
+                    + tableName + ". Skipping update.");
+            return;
+        }
+
         String sql = UpdateRecords.updateRecords(tableName, before, after);
         
-        List<Object> values = new ArrayList<>(UpdateRecords.getUpdatedValues(before, after).values());
+        if (sql != null && !sql.trim().isEmpty()) {
+            List<Object> values = new ArrayList<>(UpdateRecords.getUpdatedValues(before, after).values());
+            values.add(before.get("id"));
 
-        values.add(before.get("id"));
-
-        jdbcTemplate.update(sql,values.toArray());
+            jdbcTemplate.update(sql, values.toArray());
+        } 
+        else {
+            System.out.println("No changes detected for " + tableName + ". Skipping update.");
+        }
     }
 
     public void deleteRecord(String tableName,Map<String, ?> before){

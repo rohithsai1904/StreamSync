@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public class TargetDataBaseConfig {
@@ -21,11 +23,20 @@ public class TargetDataBaseConfig {
 
     @Bean(name = "targetDataSource")
     public DataSource targetDataSource() {
-        return targetDataSourceProperties().initializeDataSourceBuilder().build();
+        return targetDataSourceProperties()
+                .initializeDataSourceBuilder()
+                .build();
     }
 
     @Bean(name = "targetJdbcTemplate")
     public JdbcTemplate targetJdbcTemplate(@Qualifier("targetDataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
+    }
+
+    
+    @Bean(name = "targetTransactionManager")
+    public PlatformTransactionManager targetTransactionManager(
+            @Qualifier("targetDataSource") DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
     }
 }
