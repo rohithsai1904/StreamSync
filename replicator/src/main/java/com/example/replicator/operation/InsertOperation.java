@@ -31,7 +31,7 @@ public class InsertOperation implements DataBaseOperation{
         if (after == null || after.isNull()) {
             throw new IllegalArgumentException("After record is missing for INSERT");
         }
-        if(before!=null)
+        if(!before.isNull())
             throw new IllegalArgumentException("Before record should be empty for INSERT");
         
         String tableName = source.path("table").asText();

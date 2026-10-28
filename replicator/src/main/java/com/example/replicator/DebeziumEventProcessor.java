@@ -32,7 +32,7 @@ public class DebeziumEventProcessor {
     }
 
     public void parse(String message) throws Exception {
-
+        
         JsonNode root = objectMapper.readTree(message);
         JsonNode payload = root.path("payload");
         JsonNode schema = root.path("schema");
