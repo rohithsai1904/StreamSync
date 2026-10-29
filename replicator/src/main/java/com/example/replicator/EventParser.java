@@ -18,7 +18,8 @@ public class EventParser {
 
     @KafkaListener(
         topics = "${app.kafka.topic}",
-        groupId = "${spring.kafka.consumer.group-id}"
+        groupId = "${spring.kafka.consumer.group-id}",
+        autoStartup = "false"
     )
     public void consume(ConsumerRecord<String, String> record,Acknowledgment ack) {
         try {

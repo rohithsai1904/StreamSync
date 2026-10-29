@@ -2,6 +2,7 @@ package com.example.replicator.target;
 
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.example.replicator.utils.AlterTable;
 import com.example.replicator.utils.CreateTable;
@@ -33,14 +34,30 @@ public class DebeziumTableService {
     }
 
     public void insertRowIntoTable(String table,Map<String, ?> insertRecords){
-        String sql = InsertRow.insertRow(table, insertRecords);
-        Object[] values = insertRecords.values().toArray();
-        
-        System.out.println("SQL: " + sql);
-        System.out.println("Values: " + Arrays.toString(values));
 
-        int rowsAffected = jdbcTemplate.update(sql, values);
-        System.out.println("Rows inserted: " + rowsAffected);
+        Object id = insertRecords.get("id");
+
+        if (recordExists(table, id)) {
+
+            Map<String, Object> before = getRowByID(table, id);
+            Map<String, ?> after = insertRecords;
+            
+            updateRecords(table, before, after);
+        }
+        else{
+            String sql = InsertRow.insertRow(table, insertRecords);
+            Object[] values = insertRecords.values().toArray();
+            
+            System.out.println("SQL: " + sql);
+            System.out.println("Values: " + Arrays.toString(values));
+
+            try{
+                int rowsAffected = jdbcTemplate.update(sql, values);
+                System.out.println("Rows inserted: " + rowsAffected);
+            }catch (DataIntegrityViolationException e) {
+                System.err.println("Skipping database constraint violation: " + e.getMessage());
+            }
+        }
     }
 
     private List<String> getDestinationColumns(String tableName) {
@@ -74,10 +91,8 @@ public class DebeziumTableService {
     public void updateRecords(String tableName,Map<String, ?> before,Map<String, ?> after){
 
         Object id = before.get("id");
-        String checkSql = "SELECT COUNT(*) FROM " + tableName + " WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, id);
 
-        if (count == null || count == 0) {
+        if (!recordExists(tableName, id)) {
             System.out.println("ID " + id + " does not exist in target table "
                     + tableName + ". Skipping update.");
             return;
@@ -105,5 +120,29 @@ public class DebeziumTableService {
         values.add(before.get("id"));
 
         jdbcTemplate.update(sql,values.toArray());
+    }
+
+    public  Map<String, Object> getRowByID(String tableName ,Object id){
+        String sql = "SELECT * FROM " + tableName + " WHERE id = ?";
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, id);
+    
+        if (rows.isEmpty()) {
+            System.out.println("No row found with ID " + id);
+            return null;
+        }
+    
+        Map<String, Object> row = rows.get(0);
+        return row;
+    }
+
+    private boolean recordExists(String tableName, Object id) {
+
+        String checkSql = "SELECT COUNT(*) FROM " + tableName + " WHERE id = ?";
+    
+        Integer count = jdbcTemplate.queryForObject(
+                checkSql, Integer.class, id);
+    
+        return count != null && count > 0;
     }
 }

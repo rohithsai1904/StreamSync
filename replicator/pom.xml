@@ -10,7 +10,6 @@
 	</parent>
 	<groupId>com.example</groupId>
 	<artifactId>replicator</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<name>replicator</name>
 	<description/>
 	<url/>
@@ -78,6 +77,7 @@
 
 
 	<build>
+	    <finalName>replicator</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
