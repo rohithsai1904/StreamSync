@@ -1,8 +1,8 @@
- {
+{
   "name": "postgres-cdc",
   "config": {
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
-    "database.hostname": "postgres",
+    "database.hostname": "src-postgres",
     "database.port": "5432",
     "database.user": "app",
     "database.password": "app_password",
@@ -14,7 +14,7 @@
     "publication.autocreate.mode": "filtered",
     "table.include.list": "public.*",
     "snapshot.mode": "initial",
-    "schema.history.internal.kafka.bootstrap.servers": "kafka:29092",
-    "schema.history.internal.kafka.topic": "schemahistory.app"
+    "topic.creation.default.replication.factor" : "1",
+    "topic.creation.default.partitions" : "1"
   }
 }
