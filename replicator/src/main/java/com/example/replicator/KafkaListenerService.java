@@ -22,4 +22,15 @@ public class KafkaListenerService {
 
         System.out.println("Kafka listener started.");
     }
+
+    public void stop() {
+        registry.getListenerContainers()
+                .forEach(container -> {
+                    if (container.isRunning()) {
+                        container.stop();
+                    }
+                });
+
+        System.out.println("Kafka listener stopped.");
+    }
 }

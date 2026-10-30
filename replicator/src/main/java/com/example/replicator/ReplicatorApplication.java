@@ -33,15 +33,16 @@ public class ReplicatorApplication {
                 return;
             }
 
-            String operation = args[0].toLowerCase();
+            String operation = args[0];
             String table = args.length > 1 ? args[1] : "";
 
+            /* 
             if (args.length > 2) {
                 System.out.println(
                     "Too many arguments. Usage: <DCT|seed|listen> [table]"
                 );
                 return;
-            }
+            }*/
 
             if (!operation.equals("listen") && table.isBlank()) {
                 System.out.println(
@@ -52,9 +53,11 @@ public class ReplicatorApplication {
 
             seedingService.setTable(table);
 
+            kafkaListenerService.start();
+
             switch (operation) {
 
-                case "dct" -> {
+                case "DCT" -> {
                     DCT.ComparisonResult result =
                         seedingService.compare();
 
@@ -96,11 +99,19 @@ public class ReplicatorApplication {
                     );
                 }
 
-                case "listen" -> kafkaListenerService.start();
+                case "scheduleSeed" -> {
 
-                default -> System.out.println(
-                    "Invalid operation. Use DCT, seed, or listen."
-                );
+                    long initialDelay = Long.parseLong(args[2]);
+                    long repeatInterval = Long.parseLong(args[3]);
+                
+                    seedingService.setTable(table);
+                
+                    // Schedule Kafka shutdown and recurring seeding
+                    seedingService.scheduleSeed(
+                            initialDelay,
+                            repeatInterval
+                    );
+                }
             }
         };
     }
