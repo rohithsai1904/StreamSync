@@ -17,15 +17,31 @@ Debezium reads row changes from a source Postgres and publishes them to Kafka. A
 ## Architecture
 
 ```
-┌──────────┐ ┌──────────┐ ┌─────────┐ ┌───────────────────────────┐ ┌──────────┐
-│ Source │───▶│ Debezium │───▶│ Kafka │───▶│ Replicator (Spring Boot) │───▶│ Target │
-│ Postgres │ │ Connect │ │ │ │ │ │ Postgres │
-└────┬─────┘ └──────────┘ └─────────┘ └─────────────┬─────────────┘ └────┬─────┘
-│ │ │
-└───────────────────── DCT: compare row hashes ─────────┴───────────────────────┘
-Seeding: repair differences
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌────────────────────────┐    ┌──────────────┐
+│ Source       │    │ Debezium     │    │ Kafka        │    │ Replicator             │    │ Target       │
+│ PostgreSQL   │───▶│ Connect      │───▶│              │───▶│ (Spring Boot)          │───▶│ PostgreSQL   │
+└──────┬───────┘    └──────────────┘    └──────────────┘    └────────────────────────┘    └──────┬───────┘
+       │                                                                                         │
+       │                                                                                         │
+       └───────────────────────────────┐             ┌───────────────────────────────────────────┘
+                                       ▼             ▼
+                              ┌─────────────────────────────┐
+                              │ DCT (Data Comparison Tool)  │
+                              │ Compare row hashes          │
+                              └──────────────┬──────────────┘
+                                             │
+                                             ▼
+                              ┌─────────────────────────────┐
+                              │ Identify data differences  │
+                              └──────────────┬──────────────┘
+                                             │
+                                             ▼
+                              ┌─────────────────────────────┐
+                              │ Seeding / Data Repair       │
+                              │ Fix missing or mismatched   │
+                              │ rows                        │
+                              └─────────────────────────────┘
 ```
-
 ### Streaming
 1. Debezium reads the source write-ahead log through a `pgoutput` replication slot and publishes one message per change to a topic named `app.public.<table>`.
 2. `EventParser` consumes each message.
