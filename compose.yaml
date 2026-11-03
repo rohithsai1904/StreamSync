@@ -98,6 +98,7 @@ services:
       KEY_CONVERTER_SCHEMAS_ENABLE: "false"
       VALUE_CONVERTER_SCHEMAS_ENABLE: "true"
       REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_TOPIC_CREATION_ENABLE: "true"
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8083/ >/dev/null"]
       interval: 10s
@@ -110,7 +111,8 @@ services:
     container_name: connector-init
 
     depends_on:
-      - connect
+      connect:
+        condition: service_healthy
 
     volumes:
       - ./postgres-connector.json:/config/postgres-connector.json:ro
