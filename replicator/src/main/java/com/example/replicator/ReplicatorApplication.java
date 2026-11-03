@@ -28,7 +28,7 @@ public class ReplicatorApplication {
 
             if (args.length == 0) {
                 System.out.println(
-                    "Usage: <DCT|seed|scheduleSeed> [table]"
+                    "Usage: <listen|DCT|merkleDCT|seed|scheduleSeed> [table]"
                 );
                 return;
             }
