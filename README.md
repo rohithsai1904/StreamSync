@@ -1,26 +1,3 @@
-
-
-Skip to content
-Using Gmail with screen readers
-1 of 26,838
-(no subject)
-Inbox
-
-Telanakula, Venkata 
-Attachments
-6:06 PM (0 minutes ago)
-to me
-
-
-Get Outlook for Mac
- One attachment
-  •  Scanned by Gmail
-README.md
-100%
-
-Markdown
-
-Preview
 # StreamSync
 StreamSync replicates data between two PostgreSQL databases using change data capture (CDC), and includes a reconciliation tool that finds and repairs any differences between them.
 Debezium reads row changes from a source Postgres and publishes them to Kafka. A Spring Boot service consumes those events and applies them to a target Postgres, recording each processed Kafka offset so that redelivered events are never applied twice. For drift the stream can't fix on its own, a comparison tool hashes the rows on both sides, reports the differences, and can seed the missing or changed rows.
