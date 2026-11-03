@@ -11,7 +11,7 @@
     "plugin.name": "pgoutput",
     "slot.name": "debezium_app",
     "publication.name": "dbz_publication",
-    "publication.autocreate.mode": "filtered",
+    "publication.autocreate.mode": "disabled",
     "table.include.list": "public.*",
     "snapshot.mode": "initial",
     "topic.creation.default.replication.factor" : "1",
