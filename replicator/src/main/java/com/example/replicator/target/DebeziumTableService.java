@@ -38,11 +38,10 @@ public class DebeziumTableService {
         Object id = insertRecords.get("id");
 
         if (recordExists(table, id)) {
-
-            Map<String, Object> before = getRowByID(table, id);
+            
             Map<String, ?> after = insertRecords;
             
-            updateRecords(table, before, after);
+            updateRecords(table, after);
         }
         else{
             String sql = InsertRow.insertRow(table, insertRecords);
@@ -88,9 +87,9 @@ public class DebeziumTableService {
         }
     }
 
-    public void updateRecords(String tableName,Map<String, ?> before,Map<String, ?> after){
+    public void updateRecords(String tableName,Map<String, ?> after){
 
-        Object id = before.get("id");
+        Object id = after.get("id");
 
         if (!recordExists(tableName, id)) {
             System.out.println("ID " + id + " does not exist in target table "
@@ -98,11 +97,19 @@ public class DebeziumTableService {
             return;
         }
 
-        String sql = UpdateRecords.updateRecords(tableName, before, after);
+        String sql = UpdateRecords.updateRecords(tableName, after);
         
         if (sql != null && !sql.trim().isEmpty()) {
-            List<Object> values = new ArrayList<>(UpdateRecords.getUpdatedValues(before, after).values());
-            values.add(before.get("id"));
+
+            List<Object> values = new ArrayList<>();
+
+            after.forEach((key, value) -> {
+                if (!"id".equalsIgnoreCase(key)) {
+                    values.add(value);
+                }
+            });
+
+            values.add(id);
 
             jdbcTemplate.update(sql, values.toArray());
         } 
@@ -144,5 +151,27 @@ public class DebeziumTableService {
                 checkSql, Integer.class, id);
     
         return count != null && count > 0;
+    }
+
+    public List<String> getPrimaryKeyColumns(String tableName) {
+
+        String sql = """
+            SELECT kcu.column_name
+            FROM information_schema.table_constraints tc
+            JOIN information_schema.key_column_usage kcu
+                ON tc.constraint_name = kcu.constraint_name
+                AND tc.constraint_schema = kcu.constraint_schema
+                AND tc.table_name = kcu.table_name
+            WHERE tc.constraint_type = 'PRIMARY KEY'
+              AND tc.table_schema = 'public'
+              AND tc.table_name = ?
+            ORDER BY kcu.ordinal_position
+            """;
+    
+        return jdbcTemplate.queryForList(
+            sql,
+            String.class,
+            tableName
+        );
     }
 }

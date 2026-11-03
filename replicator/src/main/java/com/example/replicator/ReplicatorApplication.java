@@ -58,10 +58,9 @@ public class ReplicatorApplication {
             switch (operation) {
 
                 case "DCT" -> {
-                    DCT.ComparisonResult result =
-                        seedingService.compare();
+                    ComparisionResult result = seedingService.compare();
 
-                    dct.printComparisonResults(result);
+                    dct.printComparisionResults(result);
 
                     System.out.println(
                         "Comparison completed for table: " + table
@@ -89,8 +88,7 @@ public class ReplicatorApplication {
                 }
 
                 case "seed" -> {
-                    DCT.ComparisonResult result =
-                        seedingService.compare();
+                    ComparisionResult result = seedingService.compare();
 
                     seedingService.seed(result);
 
@@ -112,6 +110,37 @@ public class ReplicatorApplication {
                             repeatInterval
                     );
                 }
+
+                case "merkleDCT" -> {
+                    ComparisionResult result = seedingService.compareMerkle();
+
+                    dct.printComparisionResults(result);
+
+                    System.out.println(
+                        "Comparison completed for table: " + table
+                    );
+
+                    System.out.print(
+                        "Do you want to seed the target? (yes/no): "
+                    );
+                    System.out.flush();
+
+                    Scanner scanner = new Scanner(System.in);
+                    String choice = scanner.hasNextLine()
+                        ? scanner.nextLine().trim()
+                        : "no";
+
+                    if (choice.equalsIgnoreCase("yes")
+                            || choice.equalsIgnoreCase("y")) {
+
+                        seedingService.seed(result);
+
+                        System.out.println(
+                            "Seeding completed for table: " + table
+                        );
+                    }
+                }
+
             }
         };
     }

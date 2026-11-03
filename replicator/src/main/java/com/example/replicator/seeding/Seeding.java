@@ -1,13 +1,13 @@
 package com.example.replicator.seeding;
 
 import org.springframework.stereotype.Service;
-import com.example.replicator.DCT.DCT;
 import com.example.replicator.target.DebeziumTableService;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.*;
+import com.example.replicator.ComparisionResult;
 
 @Service
 public class Seeding {
@@ -26,27 +26,26 @@ public class Seeding {
         this.targetDebeziumTableService = new DebeziumTableService(this.targetJdbcTemplate);
     }
 
-    public void seed(DCT.ComparisonResult result) {
+    public void seed(ComparisionResult result) {
         String tableName = result.tableName();
-        List<Integer> missingInTarget = result.missingInTarget();
-        List<Integer> extraInTarget = result.extraInTarget();
-        List<Integer> mismatched = result.mismatched();
+        List<Long> missingInTarget = result.missingInTarget();
+        List<Long> extraInTarget = result.extraInTarget();
+        List<Long> mismatched = result.mismatched();
 
         //Insert in Target
-        for(int id: missingInTarget){
+        for(long id: missingInTarget){
             Map<String, Object> row = sourceDebeziumTableService.getRowByID(tableName, id);
             targetDebeziumTableService.insertRowIntoTable(tableName, row);
         }
         //Update in Target
-        for(int id: mismatched){
-            Map<String, Object> before = targetDebeziumTableService.getRowByID(tableName, id);
+        for(long id: mismatched){
             Map<String, Object> after = sourceDebeziumTableService.getRowByID(tableName, id);
 
-            targetDebeziumTableService.updateRecords(tableName, before, after);
+            targetDebeziumTableService.updateRecords(tableName, after);
         }
 
         //Insert in Source
-        for(int id: extraInTarget){
+        for(long id: extraInTarget){
             Map<String, Object> row = targetDebeziumTableService.getRowByID(tableName, id);
             sourceDebeziumTableService.insertRowIntoTable(tableName, row);
         }

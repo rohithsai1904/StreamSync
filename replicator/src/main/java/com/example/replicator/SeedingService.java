@@ -2,6 +2,7 @@ package com.example.replicator;
 
 import org.springframework.stereotype.Service;
 import com.example.replicator.DCT.DCT;
+import com.example.replicator.MerkleDCT.MerkleDCT;
 import com.example.replicator.seeding.Seeding;
 
 import java.util.concurrent.Executors;
@@ -13,22 +14,27 @@ public class SeedingService {
 
     private final DCT dct;
     private final Seeding seeding;
+    private final MerkleDCT merkleDCT;
     private final KafkaListenerService kafkaListenerService;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private String table;
 
-    public SeedingService(DCT dct, Seeding seeding,KafkaListenerService kafkaListenerService) {
+    public SeedingService(DCT dct, Seeding seeding,KafkaListenerService kafkaListenerService, MerkleDCT merkleDCT) {
         this.dct = dct;
         this.seeding = seeding;
         this.kafkaListenerService = kafkaListenerService;
-
+        this.merkleDCT = merkleDCT;
     }
 
-    public DCT.ComparisonResult compare() {
+    public ComparisionResult compare() {
         return dct.compareData(table);
     }
 
-    public void seed(DCT.ComparisonResult result) {
+    public ComparisionResult compareMerkle(){
+        return merkleDCT.compareData(table);
+    }
+
+    public void seed(ComparisionResult result) {
         seeding.seed(result);
     }
 
@@ -49,7 +55,7 @@ public class SeedingService {
             kafkaListenerService.stop();
             System.out.println("Kafka listener stopped.");
             try{
-                DCT.ComparisonResult result = compare();
+                ComparisionResult result = compare();
 
                 seed(result);
 

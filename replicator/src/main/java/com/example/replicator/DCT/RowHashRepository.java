@@ -17,7 +17,7 @@ public class RowHashRepository {
         this.targetJdbcTemplate = targetJdbcTemplate;
     }
 
-    public record RowHashResult(int id, String rowHash) {}
+    public record RowHashResult(long id, String rowHash) {}
 
     public List<RowHashResult> getSourceHashes(String table) {
         return getHashes(sourceJdbcTemplate,table);
@@ -45,7 +45,7 @@ public class RowHashRepository {
     public Map<String, Object> getRecord(
             JdbcTemplate jdbcTemplate,
             String tableName,
-            Integer id) {
+            Long id) {
 
         String sql = "SELECT * FROM " + tableName + " WHERE id = ?";
 

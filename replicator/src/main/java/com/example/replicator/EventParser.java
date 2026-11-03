@@ -17,7 +17,7 @@ public class EventParser {
     }
 
     @KafkaListener(
-        topics = "${app.kafka.topic}",
+        topicPattern = "${app.kafka.topic}",
         groupId = "${spring.kafka.consumer.group-id}",
         autoStartup = "false"
     )
